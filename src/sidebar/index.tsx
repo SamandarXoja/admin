@@ -12,22 +12,61 @@ function Sidebar() {
           title: "Akumlaytor",
           path: "/",
           subcategories: [
-            { title: "Подкатегория 1", path: "/" },
+            {
+              title: "Akumly",
+              path: "/#",
+              subcategories: [
+                {
+                  title: "Akumlyatorlar",
+                  path: "/",
+                  subcategories: [
+                    {
+                      title: "Подкатегория дохода 3",
+                      path: "#",
+                    },
+                    {
+                      title: "Подкатегория дохода 4",
+                      path: "#",
+                    },
+                  ],
+                },
+              ],
+            },
             { title: "Подкатегория 2", path: "/sub2" },
           ],
         },
         { title: "Субкатегория 2", path: "/sub2" },
       ],
     },
+
     {
       title: "Kirim chiqim",
-      path: "/revenue",
+      path: "",
       subcategories: [
         {
           title: "Доходы",
           path: "/income",
           subcategories: [
-            { title: "Подкатегория дохода 1", path: "/income/sub1" },
+            {
+              title: "Подкатегория дохода 1",
+              path: "/income/sub1",
+              subcategories: [
+                {
+                  title: "Great-Grandson", // Новый уровень "great-grandson"
+                  path: "/revenue",
+                  subcategories: [
+                    {
+                      title: "Подкатегория дохода 3",
+                      path: "/income/sub1/great-grandson/sub1",
+                    },
+                    {
+                      title: "Подкатегория дохода 4",
+                      path: "/income/sub1/great-grandson/sub2",
+                    },
+                  ],
+                },
+              ],
+            },
             { title: "Подкатегория дохода 2", path: "/income/sub2" },
           ],
         },
@@ -35,8 +74,8 @@ function Sidebar() {
           title: "Расходы",
           path: "/expenses",
           subcategories: [
-            { title: "Подкатегория расхода 1", path: "/expenses/sub1" },
-            { title: "Подкатегория расхода 2", path: "/expenses/sub2" },
+            { title: "Подкатегория расхода 3", path: "/expenses/sub1" },
+            { title: "Подкатегория расхода 4", path: "/expenses/sub2" },
           ],
         },
       ],
@@ -47,6 +86,9 @@ function Sidebar() {
   const [openSubSubmenuIndex, setOpenSubSubmenuIndex] = useState<number | null>(
     null
   );
+  const [openSubSubSubmenuIndex, setOpenSubSubSubmenuIndex] = useState<
+    number | null
+  >(null);
 
   const toggleSubmenu = (categoryIndex: number) => {
     setOpenSubmenuIndex((prevIndex) =>
@@ -57,6 +99,12 @@ function Sidebar() {
   const toggleSubSubmenu = (subcategoryIndex: number) => {
     setOpenSubSubmenuIndex((prevIndex) =>
       prevIndex === subcategoryIndex ? null : subcategoryIndex
+    );
+  };
+
+  const toggleSubSubSubmenu = (subSubcategoryIndex: number) => {
+    setOpenSubSubSubmenuIndex((prevIndex) =>
+      prevIndex === subSubcategoryIndex ? null : subSubcategoryIndex
     );
   };
 
@@ -119,17 +167,46 @@ function Sidebar() {
                   >
                     {subcategory.subcategories?.map(
                       (subSubcategory, subSubIndex) => (
-                        <NavLink
-                          key={subSubIndex}
-                          to={subSubcategory.path}
-                          className={({ isActive }) =>
-                            `block py-[7px] pl-[10px] rounded-[5px] text-[#9A9CAE] text-[15px] cursor-pointer my-[5px] ${
-                              isActive ? "bg-[#1C1C21]" : ""
-                            }`
-                          }
-                        >
-                          {subSubcategory.title}
-                        </NavLink>
+                        <div key={subSubIndex}>
+                          <div
+                            className="flex items-center justify-between py-[3px] rounded-[5px] pl-[10px] cursor-pointer my-[5px]"
+                            onClick={() => toggleSubSubSubmenu(subSubIndex)}
+                          >
+                            <span className="text-[#9A9CAE] text-[15px]">
+                              {subSubcategory.title}
+                            </span>
+                            {openSubSubSubmenuIndex === subSubIndex ? (
+                              <ChevronDown color="#fff" size={20} />
+                            ) : (
+                              <ChevronRight color="#fff" size={20} />
+                            )}
+                          </div>
+
+                          {/* Вложенные подкатегории */}
+                          <div
+                            className={`transition-all overflow-hidden pl-[30px] ${
+                              openSubSubSubmenuIndex === subSubIndex
+                                ? "max-h-[200px] opacity-100"
+                                : "max-h-0 opacity-0"
+                            }`}
+                          >
+                            {subSubcategory.subcategories?.map(
+                              (subSubSubcategory, subSubSubIndex) => (
+                                <NavLink
+                                  key={subSubSubIndex}
+                                  to={subSubSubcategory.path}
+                                  className={({ isActive }) =>
+                                    `block py-[7px] pl-[10px] rounded-[5px] text-[#9A9CAE] text-[15px] cursor-pointer my-[5px] ${
+                                      isActive ? "bg-[#1C1C21]" : ""
+                                    }`
+                                  }
+                                >
+                                  {subSubSubcategory.title}
+                                </NavLink>
+                              )
+                            )}
+                          </div>
+                        </div>
                       )
                     )}
                   </div>
