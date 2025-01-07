@@ -1,8 +1,18 @@
-import { Angry, ChevronDown, ChevronRight, File } from "lucide-react";
+import { Button } from "../components/ui";
+import AddModal from "./components/modal";
+import { Angry, ChevronDown, ChevronRight, File, Plus } from "lucide-react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { NavLink } from "react-router";
 
 function Sidebar() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const allClass = useSelector((state: RootState) => state.counter.allClass);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   const categories = [
     {
       title: "Общий",
@@ -133,7 +143,6 @@ function Sidebar() {
               )}
             </div>
 
-            {/* Субкатегории */}
             <div
               className={`transition-all overflow-hidden pl-[30px] ${
                 openSubmenuIndex === index
@@ -157,7 +166,6 @@ function Sidebar() {
                     )}
                   </div>
 
-                  {/* Внутренние подкатегории (внуки) */}
                   <div
                     className={`transition-all overflow-hidden pl-[30px] ${
                       openSubSubmenuIndex === subIndex
@@ -182,7 +190,6 @@ function Sidebar() {
                             )}
                           </div>
 
-                          {/* Вложенные подкатегории */}
                           <div
                             className={`transition-all overflow-hidden pl-[30px] ${
                               openSubSubSubmenuIndex === subSubIndex
@@ -215,7 +222,31 @@ function Sidebar() {
             </div>
           </div>
         ))}
+
+        {allClass.map((item, i) => (
+          <div className="mt-[16px] my-7 ml-[20px] gap-2 flex" key={i}>
+            <File color="#fff" />
+            <NavLink to={item.path} className="text-[#9A9CAE] cursor-pointer">
+              {item.title}
+            </NavLink>
+          </div>
+        ))}
       </div>
+
+      <Button
+        onClick={openModal}
+        className="ml-[30px] text-white bg-sky-400 mt-5"
+      >
+        Shtatka qo'shish <Plus />
+      </Button>
+
+      <AddModal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        title="Modal Title"
+        content={<p>This is the content of the modal.</p>}
+        footerContent={<button onClick={closeModal}>Close</button>}
+      />
     </div>
   );
 }
