@@ -1,6 +1,13 @@
 import { Button } from "../components/ui";
 import AddModal from "./components/modal";
-import { Angry, ChevronDown, ChevronRight, File, Plus } from "lucide-react";
+import {
+  Angry,
+  ChevronDown,
+  ChevronRight,
+  File,
+  Plus,
+  User,
+} from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router";
@@ -233,12 +240,23 @@ function Sidebar() {
         ))}
       </div>
 
-      <Button
+      {/* <Button
         onClick={openModal}
         className="ml-[30px] text-white bg-sky-400 mt-5"
       >
         Shtatka qo'shish <Plus />
-      </Button>
+      </Button> */}
+
+      <NavLink
+        to="/user-add"
+        className="flex items-center ml-[30px] gap-2 cursor-pointer mt-16"
+      >
+        <User color="#fff" size={25} />
+        <div className="flex gap-[2px] items-center">
+          <span className="text-[#9A9CAE]">User Qo'shish</span>
+          <Plus color="#fff" />
+        </div>
+      </NavLink>
 
       <AddModal
         isOpen={isModalOpen}
