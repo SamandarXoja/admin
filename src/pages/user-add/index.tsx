@@ -20,6 +20,8 @@ function UserAdd() {
   const [usersData, setUsersData] = useState(null);
   const [error, setError] = useState(null);
 
+  const [userId, setUserId] = useState(null);
+
   const [otdel, setOtdel] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,9 +30,31 @@ function UserAdd() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const openEditModal = () => setIsEditModal(true);
+  const openEditModal = (id) => {
+    setIsEditModal(true);
+    setUserId(id);
+    // console.log(id);
+  };
   const closeEditModal = () => setIsEditModal(false);
 
+  const userInfo = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token) {
+        return;
+      }
+
+      const response = await axios.get("http://147.45.107.174:5000/api/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUsersData(response.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
@@ -80,27 +104,7 @@ function UserAdd() {
         console.log(err);
       }
     };
-    const userInfo = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
 
-        if (!token) {
-          return;
-        }
-
-        const response = await axios.get(
-          "http://147.45.107.174:5000/api/user",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setUsersData(response.data.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
     userInfo();
     fetchUserRole();
     fetchOtdel();
@@ -184,7 +188,7 @@ function UserAdd() {
                       <Trash2 className="text-[#ec2f2f]" size={22} />
                     </Button>
                     <Button
-                      onClick={openEditModal}
+                      onClick={() => openEditModal(item.id)}
                       className="bg-[#dbdbdb] w-[30px] h-[30px]"
                     >
                       <Pencil className="text-[#008000]" size={22} />
@@ -204,10 +208,11 @@ function UserAdd() {
         title="Modal Title"
         content={<p>This is the content of the modal.</p>}
         footerContent={<button onClick={closeModal}>Close</button>}
-        // userInfo={userInfo}
+        userInfo={userInfo}
       />
 
       <EditModal
+        userId={userId}
         role={role}
         otdel={otdel}
         isOpen={isEditModal}
@@ -215,6 +220,7 @@ function UserAdd() {
         title="Modal Title"
         content={<p>This is the content of the modal.</p>}
         footerContent={<button onClick={closeEditModal}>Close</button>}
+        userInfo={userInfo}
       />
     </div>
   );

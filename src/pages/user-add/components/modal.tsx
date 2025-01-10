@@ -26,6 +26,7 @@ interface CustomModalProps {
   content: React.ReactNode;
   footerContent: React.ReactNode;
   customStyles?: React.CSSProperties;
+  userInfo: () => Promise<void>;
 }
 
 const AddModal: React.FC<CustomModalProps> = ({
@@ -84,7 +85,7 @@ const AddModal: React.FC<CustomModalProps> = ({
           roleId: 0,
           otdelId: 0,
         });
-        // userInfo();
+        await userInfo();
         onRequestClose();
       }
     } catch (error) {

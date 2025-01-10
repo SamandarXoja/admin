@@ -23,6 +23,9 @@ interface CustomModalProps {
   content: React.ReactNode;
   footerContent: React.ReactNode;
   customStyles?: React.CSSProperties;
+  handleSubmit?: () => void; // Сделано необязательным
+  setCategoryName?: any;
+  categoryName?: string;
 }
 
 const AddModal: React.FC<CustomModalProps> = ({
@@ -32,7 +35,14 @@ const AddModal: React.FC<CustomModalProps> = ({
   content,
   footerContent,
   customStyles,
+  handleSubmit,
+  setCategoryName,
+  categoryName,
 }) => {
+  function handleInputChange(value) {
+    setCategoryName(event.target.value);
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -46,7 +56,7 @@ const AddModal: React.FC<CustomModalProps> = ({
           borderRadius: "10px",
           maxWidth: "500px",
           //   maxHeight: "400px",
-          height: "260px",
+          height: "200px",
           margin: "auto",
           ...customStyles,
         },
@@ -55,21 +65,18 @@ const AddModal: React.FC<CustomModalProps> = ({
     >
       <div className=" relative">
         <div className="flex flex-col gap-5 mt-8">
-          <Input placeholder="Nomi" />
-          <Select>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Theme" />
-            </SelectTrigger>
-            <SelectContent className="bg-white shadow-md">
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
+          <Input
+            onChange={handleInputChange}
+            value={categoryName}
+            placeholder="Nomi"
+          />
         </div>
 
         <div className="flex justify-end mt-6">
-          <Button className="bg-cyan-700 text-white w-full max-w-[100px] block">
+          <Button
+            onClick={handleSubmit}
+            className="bg-cyan-700 text-white w-full max-w-[100px] block"
+          >
             Send
           </Button>
         </div>

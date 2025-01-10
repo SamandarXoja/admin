@@ -126,134 +126,37 @@ function Sidebar() {
   };
 
   return (
-    <div className="w-[300px] bg-[#212a33] h-screen">
+    <div className="w-[300px] bg-[#212a33] h-screen pt-3">
       <div className="ml-[20px] max-w-[200px] min-h-[40px] flex items-center">
         <Angry color="#FFE4C4" size={60} />
       </div>
-      <div className="mt-[40px] pl-[10px] pr-[20px]">
-        {categories.map((category, index) => (
-          <div key={index}>
-            <div
-              className="flex items-center justify-between py-[3px] rounded-[5px] pl-[20px] cursor-pointer my-[10px]"
-              onClick={() => toggleSubmenu(index)}
-            >
-              <div className="flex items-center gap-[7px]">
-                <File color="#fff" />
-                <span className="text-[#9A9CAE] text-[17px]">
-                  {category.title}
-                </span>
-              </div>
-              {openSubmenuIndex === index ? (
-                <ChevronDown color="#fff" size={20} />
-              ) : (
-                <ChevronRight color="#fff" size={20} />
-              )}
-            </div>
-
-            <div
-              className={`transition-all overflow-hidden pl-[30px] ${
-                openSubmenuIndex === index
-                  ? "max-h-[200px] opacity-100"
-                  : "max-h-0 opacity-0"
-              }`}
-            >
-              {category.subcategories.map((subcategory, subIndex) => (
-                <div key={subIndex}>
-                  <div
-                    className="flex items-center justify-between py-[3px] rounded-[5px] pl-[10px] cursor-pointer my-[5px]"
-                    onClick={() => toggleSubSubmenu(subIndex)}
-                  >
-                    <span className="text-[#9A9CAE] text-[15px]">
-                      {subcategory.title}
-                    </span>
-                    {openSubSubmenuIndex === subIndex ? (
-                      <ChevronDown color="#fff" size={20} />
-                    ) : (
-                      <ChevronRight color="#fff" size={20} />
-                    )}
-                  </div>
-
-                  <div
-                    className={`transition-all overflow-hidden pl-[30px] ${
-                      openSubSubmenuIndex === subIndex
-                        ? "max-h-[200px] opacity-100"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    {subcategory.subcategories?.map(
-                      (subSubcategory, subSubIndex) => (
-                        <div key={subSubIndex}>
-                          <div
-                            className="flex items-center justify-between py-[3px] rounded-[5px] pl-[10px] cursor-pointer my-[5px]"
-                            onClick={() => toggleSubSubSubmenu(subSubIndex)}
-                          >
-                            <span className="text-[#9A9CAE] text-[15px]">
-                              {subSubcategory.title}
-                            </span>
-                            {openSubSubSubmenuIndex === subSubIndex ? (
-                              <ChevronDown color="#fff" size={20} />
-                            ) : (
-                              <ChevronRight color="#fff" size={20} />
-                            )}
-                          </div>
-
-                          <div
-                            className={`transition-all overflow-hidden pl-[30px] ${
-                              openSubSubSubmenuIndex === subSubIndex
-                                ? "max-h-[200px] opacity-100"
-                                : "max-h-0 opacity-0"
-                            }`}
-                          >
-                            {subSubcategory.subcategories?.map(
-                              (subSubSubcategory, subSubSubIndex) => (
-                                <NavLink
-                                  key={subSubSubIndex}
-                                  to={subSubSubcategory.path}
-                                  className={({ isActive }) =>
-                                    `block py-[7px] pl-[10px] rounded-[5px] text-[#9A9CAE] text-[15px] cursor-pointer my-[5px] ${
-                                      isActive ? "bg-[#1C1C21]" : ""
-                                    }`
-                                  }
-                                >
-                                  {subSubSubcategory.title}
-                                </NavLink>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        {allClass.map((item, i) => (
-          <div className="mt-[16px] my-7 ml-[20px] gap-2 flex" key={i}>
-            <File color="#fff" />
-            <NavLink to={item.path} className="text-[#9A9CAE] cursor-pointer">
-              {item.title}
-            </NavLink>
-          </div>
-        ))}
+      <div className="mt-[40px] ml-[10px] pl-[10px] pr-[20px]">
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            `text-[#9A9CAE] cursor-pointer max-w-[230px] ${
+              isActive
+                ? "bg-blue-500 flex gap-2 text-white rounded-md px-2 py-1"
+                : "px-2 py-1 flex gap-2"
+            }`
+          }
+        >
+          <File color="#fff" />
+          Spravochnik
+        </NavLink>
       </div>
-
-      {/* <Button
-        onClick={openModal}
-        className="ml-[30px] text-white bg-sky-400 mt-5"
-      >
-        Shtatka qo'shish <Plus />
-      </Button> */}
 
       <NavLink
         to="/user-add"
-        className="flex items-center ml-[30px] gap-2 cursor-pointer mt-16"
+        className={({ isActive }) =>
+          `flex text-[#9A9CAE] max-w-[230px] px-2 py-1 rounded-md items-center ml-[20px] gap-2 cursor-pointer mt-10 ${
+            isActive ? "bg-blue-500 px-2 py-1 text-white" : ""
+          }`
+        }
       >
         <User color="#fff" size={25} />
         <div className="flex gap-[2px] items-center">
-          <span className="text-[#9A9CAE]">User Qo'shish</span>
+          User Qo'shish
           <Plus color="#fff" />
         </div>
       </NavLink>

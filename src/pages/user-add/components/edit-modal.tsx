@@ -26,9 +26,12 @@ interface CustomModalProps {
   content: React.ReactNode;
   footerContent: React.ReactNode;
   customStyles?: React.CSSProperties;
+  userId?: number;
+  userInfo: () => Promise<void>;
 }
 
 const EditModal: React.FC<CustomModalProps> = ({
+  userId,
   role,
   otdel,
   isOpen,
@@ -37,9 +40,8 @@ const EditModal: React.FC<CustomModalProps> = ({
   content,
   footerContent,
   customStyles,
+  userInfo,
 }) => {
-  //   console.log(otdel);
-
   const [formData, setFormData] = useState({
     userName: "",
     password: "",
@@ -47,6 +49,57 @@ const EditModal: React.FC<CustomModalProps> = ({
     roleId: 0,
     otdelId: 0,
   });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: number) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!userId) {
+      alert("User ID не указан.");
+      return;
+    }
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      alert("Токен не найден");
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `http://147.45.107.174:5000/api/user/${userId}`,
+        {
+          userName: formData.userName,
+          password: formData.password,
+          fio: formData.fio,
+          roleId: formData.roleId,
+          otdelId: formData.otdelId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Данные успешно обновлены!");
+        onRequestClose();
+        await userInfo();
+      }
+    } catch (error) {
+      console.error("Ошибка при обновлении данных:", error);
+      alert("Произошла ошибка при обновлении данных.");
+    }
+  };
 
   return (
     <Modal
@@ -69,31 +122,67 @@ const EditModal: React.FC<CustomModalProps> = ({
     >
       <div className="relative">
         <div className="flex flex-col gap-5 mt-8">
-          <Input placeholder="foydalanuvchi ismi" name="userName" />
+          <Input
+            placeholder="foydalanuvchi ismi"
+            name="userName"
+            value={formData.userName}
+            onChange={handleChange}
+          />
 
-          <Input placeholder="Parol" name="password" />
+          <Input
+            placeholder="Parol"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
 
-          <Input placeholder="FIO" name="fio" />
+          <Input
+            placeholder="FIO"
+            name="fio"
+            value={formData.fio}
+            onChange={handleChange}
+          />
+
           <div>
             <div>
               <p className="mb-1 ml-[2px]">Roli</p>
-              <Select>
+              <Select
+                onValueChange={(value) =>
+                  handleSelectChange("roleId", Number(value))
+                }
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Roli" />
                 </SelectTrigger>
                 <SelectContent className="bg-white shadow-md">
-                  <SelectItem value="Roli">Roli</SelectItem>
+                  {role?.map((item) => {
+                    return (
+                      <SelectItem value={String(item.id)} key={item?.id}>
+                        {item?.name}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
             <div className="mt-3">
               <p className="mb-1 ml-[2px]">Otdel</p>
-              <Select>
+              <Select
+                onValueChange={(value) =>
+                  handleSelectChange("otdelId", Number(value))
+                }
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Otdel" />
                 </SelectTrigger>
                 <SelectContent className="bg-white shadow-md">
-                  <SelectItem value="Otdel"></SelectItem>
+                  {otdel?.map((item) => {
+                    return (
+                      <SelectItem value={String(item.id)} key={item?.id}>
+                        {item?.name}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -101,7 +190,10 @@ const EditModal: React.FC<CustomModalProps> = ({
         </div>
 
         <div className="flex justify-end mt-6">
-          <Button className="bg-cyan-700 text-white w-full max-w-[100px] block">
+          <Button
+            onClick={handleSubmit}
+            className="bg-cyan-700 text-white w-full max-w-[100px] block"
+          >
             Send
           </Button>
         </div>

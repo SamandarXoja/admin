@@ -9,30 +9,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui";
+import axios from "axios";
 import { X } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import Modal from "react-modal";
 
 // Убедитесь, что модальное окно связано с элементом root вашего приложения
 Modal.setAppElement("#root");
 
 interface CustomModalProps {
+  role: any;
+  otdel: any;
   isOpen: boolean;
   onRequestClose: () => void;
   title: string;
   content: React.ReactNode;
   footerContent: React.ReactNode;
   customStyles?: React.CSSProperties;
+  userId?: number;
+  userInfo: () => Promise<void>;
 }
 
-const AddModalTab: React.FC<CustomModalProps> = ({
+const EditModal: React.FC<CustomModalProps> = ({
+  userId,
+  role,
+  otdel,
   isOpen,
   onRequestClose,
-  title,
-  content,
-  footerContent,
+  editCatergoies,
   customStyles,
+  userInfo,
+  editCatergoiesName,
+  setEditCatergoiesName,
 }) => {
+  function handleInputChange(e) {
+    setEditCatergoiesName(e.target.value);
+
+    // console.log();
+    
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -45,22 +61,28 @@ const AddModalTab: React.FC<CustomModalProps> = ({
           padding: "20px",
           borderRadius: "10px",
           maxWidth: "500px",
-          //   maxHeight: "400px",
-          height: "260px",
+
+          height: "180px",
           margin: "auto",
           ...customStyles,
         },
       }}
-      //   className="min-h-[200px] bg-white mx-auto"
     >
-      <div className=" relative">
+      <div className="relative">
         <div className="flex flex-col gap-5 mt-8">
-          <Input placeholder="Nomi" />
-          <Input placeholder="Unvoni" />
+          <Input
+            onChange={handleInputChange}
+            value={editCatergoiesName}
+            placeholder="Shtatka Nomi"
+            name="userName"
+          />
         </div>
 
         <div className="flex justify-end mt-6">
-          <Button className="bg-cyan-700 text-white w-full max-w-[100px] block">
+          <Button
+            onClick={editCatergoies}
+            className="bg-cyan-700 text-white w-full max-w-[100px] block"
+          >
             Send
           </Button>
         </div>
@@ -75,4 +97,4 @@ const AddModalTab: React.FC<CustomModalProps> = ({
   );
 };
 
-export default AddModalTab;
+export default EditModal;
