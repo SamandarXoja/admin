@@ -1,172 +1,165 @@
 import { Button } from "../components/ui";
 import AddModal from "./components/modal";
+import axios from "axios";
 import {
   Angry,
   ChevronDown,
   ChevronRight,
   File,
+  LogOut,
   Plus,
   User,
 } from "lucide-react";
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { NavLink } from "react-router";
+import { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router";
 
-function Sidebar() {
+function Sidebar({ onLogout }) {
+  const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [openNodes, setOpenNodes] = useState(new Set());
 
-  const allClass = useSelector((state: RootState) => state.counter.allClass);
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const token = localStorage.getItem("authToken");
 
-  const categories = [
-    {
-      title: "Общий",
-      path: "/",
-      subcategories: [
-        {
-          title: "Akumlaytor",
-          path: "/",
-          subcategories: [
-            {
-              title: "Akumly",
-              path: "/#",
-              subcategories: [
-                {
-                  title: "Akumlyatorlar",
-                  path: "/",
-                  subcategories: [
-                    {
-                      title: "Подкатегория дохода 3",
-                      path: "#",
-                    },
-                    {
-                      title: "Подкатегория дохода 4",
-                      path: "#",
-                    },
-                  ],
-                },
-              ],
+        if (!token) {
+          return;
+        }
+
+        const response = await axios.get(
+          "http://147.45.107.174:5000/api/material-category",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
             },
-            { title: "Подкатегория 2", path: "/sub2" },
-          ],
-        },
-        { title: "Субкатегория 2", path: "/sub2" },
-      ],
-    },
+          }
+        );
 
-    {
-      title: "Kirim chiqim",
-      path: "",
-      subcategories: [
-        {
-          title: "Доходы",
-          path: "/income",
-          subcategories: [
-            {
-              title: "Подкатегория дохода 1",
-              path: "/income/sub1",
-              subcategories: [
-                {
-                  title: "Great-Grandson", // Новый уровень "great-grandson"
-                  path: "/revenue",
-                  subcategories: [
-                    {
-                      title: "Подкатегория дохода 3",
-                      path: "/income/sub1/great-grandson/sub1",
-                    },
-                    {
-                      title: "Подкатегория дохода 4",
-                      path: "/income/sub1/great-grandson/sub2",
-                    },
-                  ],
-                },
-              ],
-            },
-            { title: "Подкатегория дохода 2", path: "/income/sub2" },
-          ],
-        },
-        {
-          title: "Расходы",
-          path: "/expenses",
-          subcategories: [
-            { title: "Подкатегория расхода 3", path: "/expenses/sub1" },
-            { title: "Подкатегория расхода 4", path: "/expenses/sub2" },
-          ],
-        },
-      ],
-    },
-  ];
+        setCategoriesData(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    fetchCategories();
+  }, []);
 
-  const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
-  const [openSubSubmenuIndex, setOpenSubSubmenuIndex] = useState<number | null>(
-    null
-  );
-  const [openSubSubSubmenuIndex, setOpenSubSubSubmenuIndex] = useState<
-    number | null
-  >(null);
-
-  const toggleSubmenu = (categoryIndex: number) => {
-    setOpenSubmenuIndex((prevIndex) =>
-      prevIndex === categoryIndex ? null : categoryIndex
-    );
+  const toggleNode = (id) => {
+    setOpenNodes((prevOpenNodes) => {
+      const newOpenNodes = new Set(prevOpenNodes);
+      if (newOpenNodes.has(id)) {
+        newOpenNodes.delete(id);
+      } else {
+        newOpenNodes.add(id);
+      }
+      return newOpenNodes;
+    });
   };
 
-  const toggleSubSubmenu = (subcategoryIndex: number) => {
-    setOpenSubSubmenuIndex((prevIndex) =>
-      prevIndex === subcategoryIndex ? null : subcategoryIndex
-    );
-  };
+  const renderTree = (node) => {
+    return (
+      <div key={node.id}>
+        <div
+          className={`flex items-center text-[#9A9CAE] cursor-pointer p-1 ${
+            !node.isParent && selectedNodeId === node.id
+              ? "bg-blue-500 text-white rounded-md"
+              : ""
+          } ${!node.isParent ? "ml-[20px] mb-2" : "mb-2"}`}
+          onClick={() => {
+            if (!node.isParent) {
+              setSelectedNodeId(node.id); // Set selected category ID
+            } else {
+              toggleNode(node.id);
+            }
+          }}
+        >
+          {node.isParent && (
+            <span className="mr-2">
+              {openNodes.has(node.id) ? <ChevronDown /> : <ChevronRight />}
+            </span>
+          )}
 
-  const toggleSubSubSubmenu = (subSubcategoryIndex: number) => {
-    setOpenSubSubSubmenuIndex((prevIndex) =>
-      prevIndex === subSubcategoryIndex ? null : subSubcategoryIndex
+          <span className="text-2xl">{node.name}</span>
+          {node.isParent && node.children.length === 0 && (
+            <span className="ml-2 text-gray-400">[icon]</span>
+          )}
+        </div>
+        {node.isParent && openNodes.has(node.id) && (
+          <div className="ml-4">
+            {node.children.map((child) => renderTree(child))}
+          </div>
+        )}
+      </div>
     );
   };
 
   return (
-    <div className="w-[300px] bg-[#212a33] h-screen pt-3">
-      <div className="ml-[20px] max-w-[200px] min-h-[40px] flex items-center">
-        <Angry color="#FFE4C4" size={60} />
-      </div>
-      <div className="mt-[40px] ml-[10px] pl-[10px] pr-[20px]">
+    <div className="w-[300px] flex flex-col justify-between bg-[#212a33] h-screen pt-3">
+      <div>
+        <div className="ml-[20px] max-w-[200px] min-h-[40px] flex items-center mb-10">
+          <Angry color="#FFE4C4" size={60} />
+        </div>
+        <div className="ml-[0px] pr-[0px]">
+          <NavLink to={`/some-path`}>
+            <div className="flex gap-[2px] items-center">
+              <div className="mt-5 ml-4">{categoriesData.map(renderTree)}</div>
+            </div>
+          </NavLink>
+        </div>
+
+        <div className="mt-[40px] ml-[10px] pl-[10px] pr-[20px]">
+          <NavLink
+            to="/"
+            onClick={() => setSelectedNodeId(null)} // Reset selected node when "Spravochnik" is clicked
+            className={({ isActive }) =>
+              `text-[#9A9CAE] flex items-center text-2xl cursor-pointer max-w-[230px] ${
+                isActive || selectedNodeId === "spravochnik"
+                  ? "bg-blue-500 flex gap-2 text-white rounded-md px-2 py-1"
+                  : "px-2 py-1 flex gap-2"
+              }`
+            }
+          >
+            <File color="#fff" />
+            Spravochnik
+          </NavLink>
+        </div>
+
         <NavLink
-          to="/"
+          to="/user-add"
           className={({ isActive }) =>
-            `text-[#9A9CAE] cursor-pointer max-w-[230px] ${
-              isActive
-                ? "bg-blue-500 flex gap-2 text-white rounded-md px-2 py-1"
-                : "px-2 py-1 flex gap-2"
+            `flex text-[#9A9CAE] max-w-[230px] px-2 py-1 rounded-md items-center ml-[20px] gap-2 cursor-pointer mt-5 ${
+              isActive ? "bg-blue-500 px-2 py-1 text-white" : ""
             }`
           }
         >
-          <File color="#fff" />
-          Spravochnik
+          <User color="#fff" size={25} />
+          <div className="flex gap-[2px] items-center text-2xl">
+            User Qo'shish
+            <Plus color="#fff" />
+          </div>
         </NavLink>
       </div>
 
-      <NavLink
-        to="/user-add"
-        className={({ isActive }) =>
-          `flex text-[#9A9CAE] max-w-[230px] px-2 py-1 rounded-md items-center ml-[20px] gap-2 cursor-pointer mt-10 ${
-            isActive ? "bg-blue-500 px-2 py-1 text-white" : ""
-          }`
-        }
+      <button
+        onClick={onLogout}
+        className="cursor-pointer mb-20 ml-6 flex items-end gap-2"
       >
-        <User color="#fff" size={25} />
-        <div className="flex gap-[2px] items-center">
-          User Qo'shish
-          <Plus color="#fff" />
-        </div>
-      </NavLink>
+        <LogOut color="#fff" size={24} />
+        <span className="text-white text-xl">LogOut</span>
+      </button>
 
       <AddModal
         isOpen={isModalOpen}
-        onRequestClose={closeModal}
+        onRequestClose={() => setIsModalOpen(false)}
         title="Modal Title"
         content={<p>This is the content of the modal.</p>}
-        footerContent={<button onClick={closeModal}>Close</button>}
+        footerContent={
+          <button onClick={() => setIsModalOpen(false)}>Close</button>
+        }
       />
     </div>
   );

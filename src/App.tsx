@@ -27,10 +27,17 @@ function App() {
     return <div>Loading...</div>;
   }
 
+  const handleLogout = () => {
+    // Удаляем токен и обновляем состояние
+    localStorage.removeItem("authToken");
+    setIsAuthenticated(false); // Сразу обновляем состояние, чтобы Sidebar исчез
+    Navigate("/login"); // Перенаправляем на страницу входа
+  };
+
   return (
     <>
       <div className="flex">
-        {isAuthenticated && <Sidebar />}
+        {isAuthenticated && <Sidebar onLogout={handleLogout}/>}
         <div className="flex-1">
           <Routes>
             {!isAuthenticated && (
