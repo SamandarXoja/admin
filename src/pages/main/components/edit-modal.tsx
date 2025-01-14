@@ -14,7 +14,6 @@ import { X } from "lucide-react";
 import React, { useState } from "react";
 import Modal from "react-modal";
 
-
 Modal.setAppElement("#root");
 
 interface CustomModalProps {
@@ -31,23 +30,20 @@ interface CustomModalProps {
 }
 
 const EditModal: React.FC<CustomModalProps> = ({
-  userId,
-  role,
-  otdel,
   isOpen,
   onRequestClose,
-  editCatergoies,
   customStyles,
-  userInfo,
-  editCatergoiesName,
   setEditCatergoiesName,
+  handleEdit,
+  number,
+  name,
+  measurement,
+  price,
+  setNumber,
+  setName,
+  setMeasurement,
+  setPrice,
 }) => {
-  function handleInputChange(e) {
-    setEditCatergoiesName(e.target.value);
-
-    // console.log();
-  }
-
   return (
     <Modal
       isOpen={isOpen}
@@ -61,25 +57,49 @@ const EditModal: React.FC<CustomModalProps> = ({
           borderRadius: "10px",
           maxWidth: "500px",
 
-          height: "180px",
+          height: "450px",
           margin: "auto",
           ...customStyles,
         },
       }}
     >
       <div className="relative">
-        <div className="flex flex-col gap-5 mt-8">
+        <div className="flex flex-col  mt-4">
+          <span className="mb-1">Number</span>
           <Input
-            onChange={handleInputChange}
-            value={editCatergoiesName}
-            placeholder="Shtatka Nomi"
-            name="userName"
+            placeholder="number"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col  mt-4">
+          <span className="mb-1">Name</span>
+          <Input
+            placeholder="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col  mt-4">
+          <span className="mb-1">Measurement</span>
+          <Input
+            placeholder="measurement"
+            value={measurement}
+            onChange={(e) => setMeasurement(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col  mt-4">
+          <span className="mb-1">price</span>
+          <Input
+            placeholder="price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
           />
         </div>
 
         <div className="flex justify-end mt-6">
           <Button
-            onClick={editCatergoies}
+            onClick={handleEdit}
             className="bg-cyan-700 text-white w-full max-w-[100px] block"
           >
             Send
@@ -87,7 +107,7 @@ const EditModal: React.FC<CustomModalProps> = ({
         </div>
         <button
           onClick={onRequestClose}
-          className="absolute right-[-20px] top-[-50px]"
+          className="absolute right-[-20px] top-[-37px]"
         >
           <X color="#B22222" />
         </button>

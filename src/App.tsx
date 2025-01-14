@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Home from "./pages/Home";
 import Login from "./pages/login";
-import Revenue from "./pages/revenue";
+import Main from "./pages/main";
 import UserAdd from "./pages/user-add";
 import Sidebar from "./sidebar";
 import { Navigate, Route, Routes } from "react-router";
@@ -37,7 +37,7 @@ function App() {
   return (
     <>
       <div className="flex">
-        {isAuthenticated && <Sidebar onLogout={handleLogout}/>}
+        {isAuthenticated && <Sidebar onLogout={handleLogout} />}
         <div className="flex-1">
           <Routes>
             {!isAuthenticated && (
@@ -51,9 +51,9 @@ function App() {
               }
             />
             <Route
-              path="/revenue"
+              path="/main"
               element={
-                isAuthenticated ? <Revenue /> : <Navigate to="/login" replace />
+                isAuthenticated ? <Main /> : <Navigate to="/login" replace />
               }
             />
             <Route

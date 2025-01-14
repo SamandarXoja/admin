@@ -1,4 +1,8 @@
 import { Button } from "../components/ui";
+import {
+  fetchCategoryMaterialData,
+  setSelectedCategoryId,
+} from "../redux/slice/treeSlice";
 import AddModal from "./components/modal";
 import axios from "axios";
 import {
@@ -11,10 +15,12 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router";
 
 function Sidebar({ onLogout }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categoriesData, setCategoriesData] = useState([]);
@@ -71,7 +77,9 @@ function Sidebar({ onLogout }) {
           } ${!node.isParent ? "ml-[20px] mb-2" : "mb-2"}`}
           onClick={() => {
             if (!node.isParent) {
-              setSelectedNodeId(node.id); // Set selected category ID
+              dispatch(setSelectedCategoryId(node.id));
+              dispatch(fetchCategoryMaterialData(node.id));
+              setSelectedNodeId(node.id);
             } else {
               toggleNode(node.id);
             }
@@ -104,7 +112,7 @@ function Sidebar({ onLogout }) {
           <Angry color="#FFE4C4" size={60} />
         </div>
         <div className="ml-[0px] pr-[0px]">
-          <NavLink to={`/some-path`}>
+          <NavLink to={`/main`}>
             <div className="flex gap-[2px] items-center">
               <div className="mt-5 ml-4">{categoriesData.map(renderTree)}</div>
             </div>
