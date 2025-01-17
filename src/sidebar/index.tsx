@@ -76,6 +76,19 @@ function Sidebar({ onLogout }) {
               : ""
           } ${!node.isParent ? "ml-[20px] mb-2" : "mb-2"}`}
           onClick={() => {
+            // Построение полного пути на основе родительской цепочки
+            let path = `/${node.id}`;
+            let currentNode = node;
+
+            while (currentNode.parentId !== null) {
+              path = `/${currentNode.parentId}${path}`;
+              currentNode = findNodeById(categoriesData, currentNode.parentId);
+            }
+
+            // Навигация
+            navigate(path);
+
+            // Логика выбора и вызова действий
             if (!node.isParent) {
               dispatch(setSelectedCategoryId(node.id));
               dispatch(fetchCategoryMaterialData(node.id));
@@ -104,72 +117,87 @@ function Sidebar({ onLogout }) {
       </div>
     );
   };
-
+  const findNodeById = (nodes, id) => {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children && node.children.length > 0) {
+        const found = findNodeById(node.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
   return (
-    <div className="w-[300px] flex flex-col justify-between bg-[#212a33] h-screen pt-3">
-      <div>
-        <div className="ml-[20px] max-w-[200px] min-h-[40px] flex items-center mb-10">
-          <Angry color="#FFE4C4" size={60} />
-        </div>
-        <div className="ml-[0px] pr-[0px]">
-          <NavLink to={`/main`}>
+    <>
+      <div className="w-[300px] flex flex-col justify-between bg-[#212a33] min-h-screen pt-3">
+        <div>
+          <div className="ml-[20px] max-w-[200px] min-h-[40px] flex items-center mb-10">
+            <Angry color="#FFE4C4" size={60} />
+          </div>
+          <div className="ml-[0px] pr-[0px]">
             <div className="flex gap-[2px] items-center">
-              <div className="mt-5 ml-4">{categoriesData.map(renderTree)}</div>
+              {/* <div className="mt-5 ml-4">{categoriesData.map(renderTree)}</div> */}
+            </div>
+            {/* <NavLink to={`/main`}>
+          </NavLink> */}
+          </div>
+
+          <div className="mt-[40px] ml-[10px] pl-[10px] pr-[20px]">
+            <NavLink
+              to="/"
+              onClick={() => setSelectedNodeId(null)} // Reset selected node when "Spravochnik" is clicked
+              className={({ isActive }) =>
+                `text-[#9A9CAE] flex items-center text-2xl cursor-pointer max-w-[230px] ${
+                  isActive || selectedNodeId === "spravochnik"
+                    ? "bg-blue-500 flex gap-2 text-white rounded-md px-2 py-1"
+                    : "px-2 py-1 flex gap-2"
+                }`
+              }
+            >
+              <File color="#fff" />
+              Spravochnik
+            </NavLink>
+          </div>
+
+          <NavLink
+            to="/user-add"
+            className={({ isActive }) =>
+              `flex text-[#9A9CAE] mb-20 max-w-[230px] px-2 py-1 rounded-md items-center ml-[20px] gap-2 cursor-pointer mt-5 ${
+                isActive ? "bg-blue-500 px-2 py-1 text-white" : ""
+              }`
+            }
+          >
+            <User color="#fff" size={25} />
+            <div className="flex gap-[2px] items-center text-2xl">
+              User Qo'shish
+              <Plus color="#fff" />
             </div>
           </NavLink>
         </div>
 
-        <div className="mt-[40px] ml-[10px] pl-[10px] pr-[20px]">
-          <NavLink
-            to="/"
-            onClick={() => setSelectedNodeId(null)} // Reset selected node when "Spravochnik" is clicked
-            className={({ isActive }) =>
-              `text-[#9A9CAE] flex items-center text-2xl cursor-pointer max-w-[230px] ${
-                isActive || selectedNodeId === "spravochnik"
-                  ? "bg-blue-500 flex gap-2 text-white rounded-md px-2 py-1"
-                  : "px-2 py-1 flex gap-2"
-              }`
-            }
-          >
-            <File color="#fff" />
-            Spravochnik
-          </NavLink>
-        </div>
-
-        <NavLink
-          to="/user-add"
-          className={({ isActive }) =>
-            `flex text-[#9A9CAE] max-w-[230px] px-2 py-1 rounded-md items-center ml-[20px] gap-2 cursor-pointer mt-5 ${
-              isActive ? "bg-blue-500 px-2 py-1 text-white" : ""
-            }`
-          }
+        <button
+          onClick={onLogout}
+          className="cursor-pointer mb-20 ml-6 flex items-end gap-2"
         >
-          <User color="#fff" size={25} />
-          <div className="flex gap-[2px] items-center text-2xl">
-            User Qo'shish
-            <Plus color="#fff" />
-          </div>
-        </NavLink>
+          <LogOut color="#fff" size={24} />
+          <span className="text-white text-xl">LogOut</span>
+        </button>
+
+        <AddModal
+          isOpen={isModalOpen}
+          onRequestClose={() => setIsModalOpen(false)}
+          title="Modal Title"
+          content={<p>This is the content of the modal.</p>}
+          footerContent={
+            <button onClick={() => setIsModalOpen(false)}>Close</button>
+          }
+        />
       </div>
 
-      <button
-        onClick={onLogout}
-        className="cursor-pointer mb-20 ml-6 flex items-end gap-2"
-      >
-        <LogOut color="#fff" size={24} />
-        <span className="text-white text-xl">LogOut</span>
-      </button>
-
-      <AddModal
-        isOpen={isModalOpen}
-        onRequestClose={() => setIsModalOpen(false)}
-        title="Modal Title"
-        content={<p>This is the content of the modal.</p>}
-        footerContent={
-          <button onClick={() => setIsModalOpen(false)}>Close</button>
-        }
-      />
-    </div>
+      <div className="bg-[#131619] w-[250px] flex flex-col pt-[150px]">
+        {categoriesData.map(renderTree)}
+      </div>
+    </>
   );
 }
 
