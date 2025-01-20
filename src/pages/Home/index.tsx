@@ -19,12 +19,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../components/ui";
+import Catergories from "../../sidebar/components/catergories";
 import AddModal from "./components/add-modal";
+import DirectoryModal from "./components/directory-modal";
 import EditModal from "./components/edit-modal";
 import ModalTabEdit from "./components/edit-modal";
+import OrganizationModal from "./components/organization-modal";
 import axios from "axios";
 import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
 
 const data = [
   { name: "Иван", age: 28 },
@@ -45,6 +49,39 @@ function Home() {
   const [categoriesParentId, setCategoriesParentId] = useState(null);
 
   const [editCatergoiesName, setEditCatergoiesName] = useState("");
+
+  const [directory, setDirectory] = useState(null);
+
+  const [selectedData, setselectedData] = useState(null);
+
+  const [active, setActive] = useState("");
+
+  const [organizationData, setOrganizationData] = useState(null);
+
+  const [directoryId, setDirectoryId] = useState(null);
+
+  // console.log(directoryId);
+
+  const [isDirectoryModal, setIsDirectoryModal] = useState(false);
+  const [isOrganizationModal, setIsOrganizationModal] = useState(false);
+
+  const [directoryName, setDirectoryName] = useState("");
+  const [directoryTitle, setDirectoryTitle] = useState("");
+
+  const [organizationType, setOrganizationType] = useState(0);
+
+  const [organizationName, setOrganizationName] = useState("");
+
+  // console.log(organizationType);
+
+  const [activeTab, setActiveTab] = useState(
+    localStorage.getItem("activeTab") || "Shtatka qo'shish" // Устанавливаем сохранённый таб или дефолтный
+  );
+
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    localStorage.setItem("activeTab", value);
+  };
 
   async function materialCategory() {
     try {
@@ -67,12 +104,87 @@ function Home() {
       console.log(error);
     }
   }
+
+  async function fetchDirectory() {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        return;
+      }
+
+      const response = await axios.get(
+        "http://147.45.107.174:5000/api/spravochnik/type-of-sp",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setDirectory(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function fetchSelectedData(id) {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        return;
+      }
+
+      const response = await axios.get(
+        `http://147.45.107.174:5000/api/spravochnik/typeOfSpId/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setselectedData(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function organization(type) {
+    // http://147.45.107.174:5000/api/organization/type/0
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        return;
+      }
+
+      const response = await axios.get(
+        `http://147.45.107.174:5000/api/organization/type/${type}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setOrganizationData(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     materialCategory();
+    fetchDirectory();
+    handleClick("Prixod", 0);
+    // fetchSelectedData();
   }, []);
 
+  const [selectedValue, setSelectedValue] = useState("");
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const openDirectoryModal = () => setIsDirectoryModal(true);
+  const closeDirectoryModal = () => setIsDirectoryModal(false);
+
+  const openOrganizationModal = () => setIsOrganizationModal(true);
+  const closeOrganizationModal = () => setIsOrganizationModal(false);
 
   const openModalEdit = (id, parentId) => {
     setCategoriesEditId(id);
@@ -169,17 +281,6 @@ function Home() {
     }
   };
 
-  const renderOptions = (data) => {
-    return data.map((item) => (
-      <div key={item.id}>
-        <SelectItem value={item.name} onClick={() => setCategoriesId(item.id)}>
-          {item.name}
-        </SelectItem>
-        {item.children?.length > 0 && renderOptions(item.children)}
-      </div>
-    ));
-  };
-
   const deleteChildRecursively = (data, id) => {
     return data
       .map((item) => {
@@ -229,10 +330,96 @@ function Home() {
     }
   }
 
+  async function createDirectory() {
+    // directoryId
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const directoryData = {
+        name: directoryName,
+        title: directoryTitle,
+        typeOfSpId: directoryId,
+      };
+
+      const response = await axios.post(
+        "http://147.45.107.174:5000/api/spravochnik/create",
+        directoryData,
+        {
+          headers: {
+            uthorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Success");
+      fetchDirectory();
+      fetchSelectedData(directoryId);
+      closeDirectoryModal();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function organizationCreate() {
+    // console.log(organizationName);
+
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const organizationData = {
+        name: organizationName,
+        type: organizationType,
+      };
+
+      const response = await axios.post(
+        "http://147.45.107.174:5000/api/organization/create",
+        organizationData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      closeOrganizationModal();
+      organization(organizationType);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const handleSelectChange = (value) => {
+    const selectedItem = directory.find((item) => item.name === value);
+
+    if (selectedItem) {
+      // setDirectoryId(selectedItem.id);
+      fetchSelectedData(selectedItem.id);
+    }
+  };
+
+  const handleClick = (button, type) => {
+    setActive(button);
+    organization(type);
+    setOrganizationType(type);
+  };
+
+  // console.log(selectedData);
+
   return (
     <>
-      <Tabs defaultValue="Shtatka qo'shish" className="w-full">
+      <Tabs
+        defaultValue={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="bg-slate-100 min-h-[50px] mt-7 ml-4 ">
+          <TabsTrigger
+            value="Ombor"
+            className="p-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-black"
+          >
+            Ombor
+          </TabsTrigger>
+
           <TabsTrigger
             value="Shtatka qo'shish"
             className="p-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-black"
@@ -241,54 +428,88 @@ function Home() {
           </TabsTrigger>
 
           <TabsTrigger
-            value="Ombor"
+            value="Organization"
             className="p-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-black"
           >
-            Ombor
+            Organization
           </TabsTrigger>
           <TabsTrigger
             className="p-2 rounded-lg data-[state=active]:bg-white data-[state=active]:text-black"
-            value="Bo'limga kerakli malumotlar"
+            value="Spravochnik"
           >
-            Bo'limga kerakli malumotlar
+            Spravochnik
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="Ombor">
+        <TabsContent value="Organization">
           <div className="w-[97%] mx-auto mt-[70px]  px-6 py-6  rounded-md shadow-md ">
             <div className=" rounded-md">
               <div className="flex justify-between">
-                <Button className="bg-sky-600 text-white mb-4">
-                  Shtatka qo'shish
-                </Button>
+                <div className="mb-3 flex gap-3">
+                  <Button
+                    onClick={() => handleClick("Prixod", 0)}
+                    className={`${
+                      active === "Prixod"
+                        ? "bg-cyan-600 text-white"
+                        : "bg-white text-black"
+                    } px-4 py-2 border rounded`}
+                  >
+                    Prixod
+                  </Button>
+                  <Button
+                    onClick={() => handleClick("Rasxod", 1)}
+                    className={`${
+                      active === "Rasxod"
+                        ? "bg-cyan-600 text-white"
+                        : "bg-white text-black"
+                    } px-4 py-2 border rounded`}
+                  >
+                    Rasxod
+                  </Button>
+                </div>
                 <Button
-                  // onClick={openModalTab}
-                  className="bg-red-600 text-white mb-4"
+                  className="bg-cyan-600 text-white"
+                  onClick={openOrganizationModal}
                 >
-                  tablitsaga qo'shish
+                  Qo'shish
                 </Button>
               </div>
+
+              {/* openOrganizationModal */}
               <Table className="border ">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Название</TableHead>
-                    <TableHead>Возраст</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.map((item, index) => (
-                    <TableRow key={index}>
+                  {organizationData?.data?.map((item, index) => (
+                    <TableRow key={item.id}>
                       <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.age}</TableCell>
+                      <TableCell className="flex gap-2 cursor-pointer justify-end">
+                        <Button
+                          className="bg-[#dbdbdb] w-[30px] h-[30px]"
+                          // onClick={() => deleteCategories(item.id)}
+                        >
+                          <Trash2 className="text-[#ec2f2f]" size={22} />
+                        </Button>
+                        <Button
+                          className="bg-[#dbdbdb] w-[30px] h-[30px]"
+                          // onClick={() => openModalEdit(item.id, item.parentId)}
+                        >
+                          <Pencil className="text-[#008000]" size={22} />
+                        </Button>
+                      </TableCell>
+                      {/* <TableCell>{item.age}</TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
-                <TableFooter>
+                {/* <TableFooter>
                   <TableRow>
                     <TableCell>Итого</TableCell>
                     <TableCell>{data.length}</TableCell>
                   </TableRow>
-                </TableFooter>
+                </TableFooter> */}
               </Table>
             </div>
 
@@ -308,16 +529,21 @@ function Home() {
             /> */}
           </div>
         </TabsContent>
-        <TabsContent value="Bo'limga kerakli malumotlar">
+
+        <TabsContent value="Spravochnik">
           <div className="ml-[20px] mt-[30px]">
-            <Select>
+            <Select value={selectedValue} onValueChange={handleSelectChange}>
               <SelectTrigger className="max-w-[700px]">
-                <SelectValue placeholder="Theme" />
+                <SelectValue placeholder="Tanglang" />
               </SelectTrigger>
               <SelectContent className="bg-white shadow-md">
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System</SelectItem>
+                {directory?.map((item) => {
+                  return (
+                    <SelectItem value={item.name} key={item.id}>
+                      {item.name}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -326,33 +552,49 @@ function Home() {
             <div className=" rounded-md">
               <div className="flex justify-end">
                 <Button
-                  // onClick={openModalTab}
-                  className="bg-red-600 text-white mb-4"
+                  onClick={openDirectoryModal}
+                  className="bg-cyan-600 text-white mb-4"
                 >
-                  tablitsaga qo'shish
+                  Tablitsaga qo'shish
                 </Button>
               </div>
               <Table className="border ">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Название</TableHead>
-                    <TableHead>Возраст</TableHead>
+                    <TableHead>name</TableHead>
+                    <TableHead>title</TableHead>
+                    <TableHead>typeOfSpName</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.map((item, index) => (
+                  {selectedData?.data.map((item, index) => (
                     <TableRow key={index}>
                       <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.age}</TableCell>
+                      <TableCell>{item.title}</TableCell>
+                      <TableCell>{item.typeOfSpName}</TableCell>
+                      <TableCell className="flex gap-2 cursor-pointer justify-end">
+                        <Button
+                          className="bg-[#dbdbdb] w-[30px] h-[30px]"
+                          // onClick={() => deleteCategories(item.id)}
+                        >
+                          <Trash2 className="text-[#ec2f2f]" size={22} />
+                        </Button>
+                        <Button
+                          className="bg-[#dbdbdb] w-[30px] h-[30px]"
+                          // onClick={() => openModalEdit(item.id, item.parentId)}
+                        >
+                          <Pencil className="text-[#008000]" size={22} />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
-                <TableFooter>
+                {/* <TableFooter>
                   <TableRow>
                     <TableCell>Итого</TableCell>
                     <TableCell>{data.length}</TableCell>
                   </TableRow>
-                </TableFooter>
+                </TableFooter> */}
               </Table>
             </div>
 
@@ -365,6 +607,7 @@ function Home() {
             />
           </div>
         </TabsContent>
+
         <TabsContent value="Shtatka qo'shish">
           <div className="w-[97%] mx-auto mt-[50px]  px-6 py-6  rounded-md shadow-md ">
             <div className="flex justify-between">
@@ -421,7 +664,21 @@ function Home() {
             </Table>
           </div>
         </TabsContent>
+        <TabsContent value="Ombor" className=" flex">
+          <Catergories />
+          <div className="flex-1">
+            <Outlet />
+          </div>
+        </TabsContent>
       </Tabs>
+
+      <OrganizationModal
+        isOpen={isOrganizationModal}
+        onRequestClose={closeOrganizationModal}
+        organizationCreate={organizationCreate}
+        setOrganizationName={setOrganizationName}
+        organizationName={organizationName}
+      />
 
       <AddModal
         isOpen={isModalOpen}
@@ -432,6 +689,17 @@ function Home() {
         handleSubmit={handleSubmit}
         setCategoryName={setCategoryName}
         categoryName={categoryName}
+      />
+      <DirectoryModal
+        isOpen={isDirectoryModal}
+        onRequestClose={closeDirectoryModal}
+        createDirectory={createDirectory}
+        setDirectoryName={setDirectoryName}
+        directoryName={directoryName}
+        directoryTitle={directoryTitle}
+        setDirectoryTitle={setDirectoryTitle}
+        setDirectoryId={setDirectoryId}
+        directory={directory}
       />
 
       <EditModal

@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui";
+import Catergories from "../../sidebar/components/catergories";
 import EditModal from "./components/edit-modal";
 import AddModal from "./components/modal";
 import axios from "axios";

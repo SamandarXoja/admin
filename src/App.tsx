@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Home from "./pages/Home";
+import Contract from "./pages/contract";
 import Login from "./pages/login";
 import Main from "./pages/main";
 import Page from "./pages/main-category/page";
@@ -17,12 +18,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import axios from "axios";
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router";
 
 function App() {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [categoriesData, setCategoriesData] = useState([]);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -34,7 +35,25 @@ function App() {
     } else {
       setIsAuthenticated(false);
     }
+  }, []);
 
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response, // Pass successful responses
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          handleLogout(); // Logout on 401 error
+        }
+        return Promise.reject(error); // Forward other errors
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor); // Clean up interceptor
+    };
+  }, []);
+
+  useEffect(() => {
     async function fetchCategories() {
       try {
         const token = localStorage.getItem("authToken");
@@ -72,25 +91,41 @@ function App() {
     setIsAlertOpen(false);
     localStorage.removeItem("authToken");
     setIsAuthenticated(false);
-    Navigate("/login");
+    navigate("/login");
   };
 
   return (
     <>
       <div className="flex">
         {isAuthenticated && <Sidebar onLogout={() => setIsAlertOpen(true)} />}
-        <div className="flex-1">
+        <div className="flex-1 ">
           <Routes>
             {!isAuthenticated && (
               <Route path="/login" element={<Login onLogin={handleLogin} />} />
             )}
 
+            {/* Вложенные маршруты для Home */}
             <Route
               path="/"
               element={
-                isAuthenticated ? <Home /> : <Navigate to="/login" replace />
+                isAuthenticated ? (
+                  <HomeLayout />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
               }
-            />
+            >
+              <Route path=":id" element={<Page data={categoriesData} />} />
+              <Route
+                path=":id/:secondId"
+                element={<Second data={categoriesData} />}
+              />
+              <Route
+                path=":id/:secondId/:threeId"
+                element={<Three data={categoriesData} />}
+              />
+            </Route>
+
             <Route
               path="/main"
               element={
@@ -104,30 +139,10 @@ function App() {
               }
             />
             <Route
-              path="/:id"
+              path="/contract"
               element={
                 isAuthenticated ? (
-                  <Page data={categoriesData} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/:id/:secondId"
-              element={
-                isAuthenticated ? (
-                  <Second data={categoriesData} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/:id/:secondId/:threeId"
-              element={
-                isAuthenticated ? (
-                  <Three data={categoriesData} />
+                  <Contract />
                 ) : (
                   <Navigate to="/login" replace />
                 )
@@ -138,7 +153,6 @@ function App() {
       </div>
 
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        {/* <AlertDialogTrigger>Open</AlertDialogTrigger> */}
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -161,6 +175,16 @@ function App() {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function HomeLayout() {
+  return (
+    <div className="">
+      <Home />
+      {/* Вложенные маршруты будут рендериться здесь */}
+      {/* <Outlet /> */}
+    </div>
   );
 }
 
